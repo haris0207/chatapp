@@ -39,6 +39,10 @@ export function useChat(username: string) {
             setMessages((prev) => [...prev, message]);
         });
 
+        socket.on('messagesCleared', () => {
+            setMessages([]);
+        });
+
         return () => {
             socket.disconnect();
             socketRef.current = null;
@@ -56,5 +60,10 @@ export function useChat(username: string) {
         [username],
     );
 
-    return { messages, sendMessage, status };
+    const clearMessages = useCallback(() => {
+        if (!socketRef.current) return;
+        socketRef.current.emit('clearMessages');
+    }, []);
+
+    return { messages, sendMessage, clearMessages, status };
 }

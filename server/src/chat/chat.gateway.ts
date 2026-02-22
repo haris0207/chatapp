@@ -64,4 +64,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     ): void {
         client.emit('messageHistory', this.messages);
     }
+
+    @SubscribeMessage('clearMessages')
+    handleClearMessages(): void {
+        this.messages = [];
+        this.server.emit('messagesCleared');
+    }
 }

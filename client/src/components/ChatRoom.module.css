@@ -64,3 +64,26 @@
   color: var(--color-status-disconnected);
   background: rgba(239, 68, 68, 0.1);
 }
+
+.clearBtn {
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-surface-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.clearBtn:hover:not(:disabled) {
+  border-color: var(--color-status-connecting);
+  color: var(--color-status-connecting);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.clearBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

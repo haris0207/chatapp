@@ -12,7 +12,7 @@ interface ChatRoomProps {
 }
 
 export default function ChatRoom({ username, onLeave }: ChatRoomProps) {
-    const { messages, sendMessage, status } = useChat(username);
+    const { messages, sendMessage, clearMessages, status } = useChat(username);
 
     return (
         <div className={styles.container}>
@@ -29,6 +29,13 @@ export default function ChatRoom({ username, onLeave }: ChatRoomProps) {
                         <span className={styles.user}>
                             👤 {username}
                         </span>
+                        <button
+                            className={styles.clearBtn}
+                            onClick={clearMessages}
+                            disabled={messages.length === 0}
+                        >
+                            Clear
+                        </button>
                         <button className={styles.leaveBtn} onClick={onLeave}>
                             Leave
                         </button>
