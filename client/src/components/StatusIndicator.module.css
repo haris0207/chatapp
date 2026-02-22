@@ -1,0 +1,24 @@
+.indicator {
+  font-size: var(--text-xs);
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.connected {
+  background-color: var(--color-status-connected);
+  box-shadow: 0 0 6px var(--color-status-connected);
+}
+
+.connecting {
+  background-color: var(--color-status-connecting);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.disconnected {
+  background-color: var(--color-status-disconnected);
+}
