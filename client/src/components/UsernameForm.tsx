@@ -50,9 +50,11 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                 </h1>
                 <p className={styles.subtitle}>Enter a username to join the chatroom</p>
 
-                <div className={styles.inputGroup}>
+                <form className={styles.inputGroup} autoComplete="off" data-lpignore="true" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
                     <input
                         type="text"
+                        name="nickname"
+                        id="nickname"
                         className={`input ${styles.field}`}
                         placeholder="Your username…"
                         value={name}
@@ -63,9 +65,12 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                         onKeyDown={handleKeyDown}
                         maxLength={20}
                         autoFocus
+                        autoComplete="off"
+                        data-1p-ignore
+                        data-form-type="other"
                     />
                     {error && <p className={styles.error}>{error}</p>}
-                </div>
+                </form>
 
                 <button
                     className={`btn btn-primary ${styles.button}`}
