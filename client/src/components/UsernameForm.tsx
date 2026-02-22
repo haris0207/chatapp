@@ -14,15 +14,15 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
     const handleSubmit = useCallback(() => {
         const trimmed = name.trim();
         if (!trimmed) {
-            setError('Please enter a username');
+            setError('Please enter a display name');
             return;
         }
         if (trimmed.length < 2) {
-            setError('Username must be at least 2 characters');
+            setError('Display name must be at least 2 characters');
             return;
         }
         if (trimmed.length > 20) {
-            setError('Username must be 20 characters or less');
+            setError('Display name must be 20 characters or less');
             return;
         }
         setError('');
@@ -48,15 +48,26 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                 <h1 className={styles.title}>
                     <span className="text-gradient">ChatApp</span>
                 </h1>
-                <p className={styles.subtitle}>Enter a username to join the chatroom</p>
+                <p className={styles.subtitle}>
+                    Join the public chatroom — pick a display name to get started
+                </p>
 
-                <form className={styles.inputGroup} autoComplete="off" data-lpignore="true" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+                <div className={styles.features}>
+                    <span className={styles.featureTag}>🌐 Real-time</span>
+                    <span className={styles.featureTag}>👥 Multi-user</span>
+                    <span className={styles.featureTag}>🔓 No login required</span>
+                </div>
+
+                <div className={styles.inputGroup} role="search">
+                    <label htmlFor="displayname" className={styles.label}>
+                        Display Name
+                    </label>
                     <input
                         type="text"
-                        name="nickname"
-                        id="nickname"
+                        name="displayname"
+                        id="displayname"
                         className={`input ${styles.field}`}
-                        placeholder="Your username…"
+                        placeholder="e.g. Alex, CoolCat99…"
                         value={name}
                         onChange={(e) => {
                             setName(e.target.value);
@@ -67,15 +78,17 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                         autoFocus
                         autoComplete="off"
                         data-1p-ignore
+                        data-lpignore="true"
                         data-form-type="other"
                     />
                     {error && <p className={styles.error}>{error}</p>}
-                </form>
+                </div>
 
                 <button
                     className={`btn btn-primary ${styles.button}`}
                     onClick={handleSubmit}
                     disabled={!name.trim()}
+                    type="button"
                 >
                     Join Chat
                     <svg
@@ -92,6 +105,10 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                         <polyline points="12 5 19 12 12 19" />
                     </svg>
                 </button>
+
+                <p className={styles.disclaimer}>
+                    No account needed — just pick a name and start chatting.
+                </p>
             </div>
         </div>
     );
