@@ -17,6 +17,28 @@ interface ChatRoomProps {
 export default function ChatRoom({ username, roomId, password, onLeave }: ChatRoomProps) {
     const { messages, onlineUsers, typingUsers, sendMessage, clearMessages, sendTyping, status, joinError } = useChat(username, roomId, password);
 
+    const handleSendMessage = (text: string, isEphemeral?: boolean) => {
+        let finalText = text.trim();
+
+        if (finalText === '/clear') {
+            clearMessages();
+            return;
+        }
+
+        if (finalText.includes('/shrug')) {
+            finalText = finalText.replace(/\/shrug/g, '¯\\_(ツ)_/¯');
+        }
+
+        if (finalText.startsWith('/roll')) {
+            const match = finalText.match(/^\/roll\s*(\d+)?$/);
+            const max = match && match[1] ? parseInt(match[1], 10) : 100;
+            const roll = Math.floor(Math.random() * max) + 1;
+            finalText = `🎲 rolled ${roll} (out of ${max})`;
+        }
+
+        sendMessage(finalText, isEphemeral);
+    };
+
     if (joinError) {
         return (
             <div className={styles.container} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -74,7 +96,7 @@ export default function ChatRoom({ username, roomId, password, onLeave }: ChatRo
                     )}
 
                     <MessageInput
-                        onSend={sendMessage}
+                        onSend={handleSendMessage}
                         onTyping={sendTyping}
                         disabled={status !== 'connected'}
                     />
