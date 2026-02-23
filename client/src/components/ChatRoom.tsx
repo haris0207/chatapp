@@ -15,7 +15,7 @@ interface ChatRoomProps {
 }
 
 export default function ChatRoom({ username, roomId, password, onLeave }: ChatRoomProps) {
-    const { messages, sendMessage, clearMessages, status, joinError } = useChat(username, roomId, password);
+    const { messages, onlineUsers, typingUsers, sendMessage, clearMessages, sendTyping, status, joinError } = useChat(username, roomId, password);
 
     if (joinError) {
         return (
@@ -63,13 +63,22 @@ export default function ChatRoom({ username, roomId, password, onLeave }: ChatRo
                 {/* Chat Column */}
                 <div className={styles.chatArea}>
                     <MessageList messages={messages} currentUsername={username} />
+
+                    {/* Typing Indicator */}
+                    {typingUsers.length > 0 && (
+                        <div className={styles.typingIndicator}>
+                            <span className={styles.typingDots}>
+                                {typingUsers.join(', ')} {typingUsers.length === 1 ? 'is' : 'are'} typing<span className={styles.dot1}>.</span><span className={styles.dot2}>.</span><span className={styles.dot3}>.</span>
+                            </span>
+                        </div>
+                    )}
+
                     <MessageInput
                         onSend={sendMessage}
+                        onTyping={sendTyping}
                         disabled={status !== 'connected'}
                     />
                 </div>
-
-                {/* Simplified: No sidebar since users in room emit is complex to track and we didn't add it in the exact socket gateway update for room members explicitly. */}
             </div>
         </div>
     );

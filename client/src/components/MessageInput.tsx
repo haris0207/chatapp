@@ -1,22 +1,46 @@
 'use client';
 
-import { useState, useCallback, KeyboardEvent } from 'react';
+import { useState, useCallback, KeyboardEvent, useRef, useEffect } from 'react';
 import styles from './MessageInput.module.css';
 
 interface MessageInputProps {
     onSend: (text: string, isEphemeral?: boolean) => void;
+    onTyping?: (isTyping: boolean) => void;
     disabled?: boolean;
 }
 
-export default function MessageInput({ onSend, disabled = false }: MessageInputProps) {
+export default function MessageInput({ onSend, onTyping, disabled = false }: MessageInputProps) {
     const [text, setText] = useState('');
     const [isEphemeral, setIsEphemeral] = useState(false);
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleSend = useCallback(() => {
         if (!text.trim() || disabled) return;
         onSend(text, isEphemeral);
         setText('');
-    }, [text, isEphemeral, disabled, onSend]);
+
+        if (onTyping) {
+            onTyping(false);
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        }
+    }, [text, isEphemeral, disabled, onSend, onTyping]);
+
+    const handleTextChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        setText(e.target.value);
+        if (onTyping && !disabled) {
+            onTyping(true);
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+            typingTimeoutRef.current = setTimeout(() => {
+                onTyping(false);
+            }, 2000);
+        }
+    }, [onTyping, disabled]);
+
+    useEffect(() => {
+        return () => {
+            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+        };
+    }, []);
 
     const handleKeyDown = useCallback(
         (e: KeyboardEvent<HTMLInputElement>) => {
@@ -46,7 +70,7 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
                     className={`input ${styles.field}`}
                     placeholder={isEphemeral ? "Type an ephemeral message…" : "Type a message…"}
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    onChange={handleTextChange}
                     onKeyDown={handleKeyDown}
                     disabled={disabled}
                     autoFocus
