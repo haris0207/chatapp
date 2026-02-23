@@ -4,18 +4,19 @@ import { useState, useCallback, KeyboardEvent } from 'react';
 import styles from './MessageInput.module.css';
 
 interface MessageInputProps {
-    onSend: (text: string) => void;
+    onSend: (text: string, isEphemeral?: boolean) => void;
     disabled?: boolean;
 }
 
 export default function MessageInput({ onSend, disabled = false }: MessageInputProps) {
     const [text, setText] = useState('');
+    const [isEphemeral, setIsEphemeral] = useState(false);
 
     const handleSend = useCallback(() => {
         if (!text.trim() || disabled) return;
-        onSend(text);
+        onSend(text, isEphemeral);
         setText('');
-    }, [text, disabled, onSend]);
+    }, [text, isEphemeral, disabled, onSend]);
 
     const handleKeyDown = useCallback(
         (e: KeyboardEvent<HTMLInputElement>) => {
@@ -30,10 +31,20 @@ export default function MessageInput({ onSend, disabled = false }: MessageInputP
     return (
         <div className={styles.container}>
             <div className={styles.inputRow}>
+                <button
+                    className={`btn btn-icon ${isEphemeral ? styles.ephemeralActive : ''}`}
+                    onClick={() => setIsEphemeral(!isEphemeral)}
+                    disabled={disabled}
+                    title="Snapchat Mode (10s auto-delete)"
+                    aria-label="Toggle Snapchat Mode"
+                    style={{ filter: isEphemeral ? 'drop-shadow(0 0 8px rgba(255,100,100,0.8))' : 'none', transition: 'all 0.2s', fontSize: '1.2rem', padding: '0 8px' }}
+                >
+                    👻
+                </button>
                 <input
                     type="text"
                     className={`input ${styles.field}`}
-                    placeholder="Type a message…"
+                    placeholder={isEphemeral ? "Type an ephemeral message…" : "Type a message…"}
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={handleKeyDown}

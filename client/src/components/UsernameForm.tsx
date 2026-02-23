@@ -4,30 +4,36 @@ import { useState, useCallback, KeyboardEvent } from 'react';
 import styles from './UsernameForm.module.css';
 
 interface UsernameFormProps {
-    onSubmit: (username: string) => void;
+    onSubmit: (username: string, roomId: string, password?: string) => void;
+    prefilledRoomId?: string;
 }
 
-export default function UsernameForm({ onSubmit }: UsernameFormProps) {
+export default function UsernameForm({ onSubmit, prefilledRoomId }: UsernameFormProps) {
     const [name, setName] = useState('');
+    const [roomId, setRoomId] = useState(prefilledRoomId || '');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
     const handleSubmit = useCallback(() => {
-        const trimmed = name.trim();
-        if (!trimmed) {
+        const trimmedName = name.trim();
+        const trimmedRoomId = roomId.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+
+        if (!trimmedName) {
             setError('Please enter a display name');
             return;
         }
-        if (trimmed.length < 2) {
-            setError('Display name must be at least 2 characters');
+        if (trimmedName.length < 2 || trimmedName.length > 20) {
+            setError('Display name must be 2-20 characters');
             return;
         }
-        if (trimmed.length > 20) {
-            setError('Display name must be 20 characters or less');
+        if (!trimmedRoomId) {
+            setError('Please enter a Room ID');
             return;
         }
+
         setError('');
-        onSubmit(trimmed);
-    }, [name, onSubmit]);
+        onSubmit(trimmedName, trimmedRoomId, password || undefined);
+    }, [name, roomId, password, onSubmit]);
 
     const handleKeyDown = useCallback(
         (e: KeyboardEvent<HTMLInputElement>) => {
@@ -49,16 +55,10 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                     <span className="text-gradient">ChatApp</span>
                 </h1>
                 <p className={styles.subtitle}>
-                    Join the public chatroom — pick a display name to get started
+                    {prefilledRoomId ? `Join ${prefilledRoomId}` : 'Create or join a private room'}
                 </p>
 
-                <div className={styles.features}>
-                    <span className={styles.featureTag}>🌐 Real-time</span>
-                    <span className={styles.featureTag}>👥 Multi-user</span>
-                    <span className={styles.featureTag}>🔓 No login required</span>
-                </div>
-
-                <div className={styles.inputGroup} role="search">
+                <div className={styles.inputGroup}>
                     <label htmlFor="displayname" className={styles.label}>
                         Display Name
                     </label>
@@ -67,7 +67,7 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                         name="displayname"
                         id="displayname"
                         className={`input ${styles.field}`}
-                        placeholder="e.g. Alex, CoolCat99…"
+                        placeholder="e.g. Alex"
                         value={name}
                         onChange={(e) => {
                             setName(e.target.value);
@@ -77,9 +77,48 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                         maxLength={20}
                         autoFocus
                         autoComplete="off"
-                        data-1p-ignore
-                        data-lpignore="true"
-                        data-form-type="other"
+                    />
+                </div>
+
+                {!prefilledRoomId && (
+                    <div className={styles.inputGroup}>
+                        <label htmlFor="roomid" className={styles.label}>
+                            Room ID
+                        </label>
+                        <input
+                            type="text"
+                            name="roomid"
+                            id="roomid"
+                            className={`input ${styles.field}`}
+                            placeholder="e.g. dev-chat"
+                            value={roomId}
+                            onChange={(e) => {
+                                setRoomId(e.target.value.toLowerCase().replace(/\s+/g, '-'));
+                                if (error) setError('');
+                            }}
+                            onKeyDown={handleKeyDown}
+                            maxLength={30}
+                            autoComplete="off"
+                        />
+                    </div>
+                )}
+
+                <div className={styles.inputGroup}>
+                    <label htmlFor="password" className={styles.label}>
+                        Room Password (Optional)
+                    </label>
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        className={`input ${styles.field}`}
+                        placeholder="Leave blank for public room"
+                        value={password}
+                        onChange={(e) => {
+                            setPassword(e.target.value);
+                            if (error) setError('');
+                        }}
+                        onKeyDown={handleKeyDown}
                     />
                     {error && <p className={styles.error}>{error}</p>}
                 </div>
@@ -87,7 +126,7 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                 <button
                     className={`btn btn-primary ${styles.button}`}
                     onClick={handleSubmit}
-                    disabled={!name.trim()}
+                    disabled={!name.trim() || !roomId.trim()}
                     type="button"
                 >
                     Join Chat
@@ -105,10 +144,6 @@ export default function UsernameForm({ onSubmit }: UsernameFormProps) {
                         <polyline points="12 5 19 12 12 19" />
                     </svg>
                 </button>
-
-                <p className={styles.disclaimer}>
-                    No account needed — just pick a name and start chatting.
-                </p>
             </div>
         </div>
     );

@@ -16,13 +16,23 @@ function formatTime(timestamp: number): string {
 }
 
 export default function MessageBubble({ message, isOwn }: MessageBubbleProps) {
+    const ephemeralStyle = message.isEphemeral ? {
+        border: '1px dashed rgba(255, 100, 100, 0.5)',
+        background: isOwn ? 'rgba(50, 0, 0, 0.4)' : 'rgba(30, 0, 0, 0.3)'
+    } : {};
+
     return (
         <div
             className={`${styles.wrapper} ${isOwn ? styles.own : styles.other} animate-fade-in-up`}
         >
-            <div className={`${styles.bubble} ${isOwn ? styles.bubbleOwn : styles.bubbleOther}`}>
+            <div className={`${styles.bubble} ${isOwn ? styles.bubbleOwn : styles.bubbleOther}`} style={ephemeralStyle}>
                 {!isOwn && (
                     <span className={styles.username}>{message.username}</span>
+                )}
+                {message.isEphemeral && (
+                    <span style={{ fontSize: '0.8rem', color: '#ff6666', marginBottom: '4px', display: 'block' }}>
+                        👻 Ephemeral Message
+                    </span>
                 )}
                 <p className={styles.text}>{message.text}</p>
                 <time className={styles.time}>{formatTime(message.timestamp)}</time>

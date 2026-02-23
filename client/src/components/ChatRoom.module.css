@@ -14,6 +14,20 @@
   flex-shrink: 0;
 }
 
+.mainArea {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.chatArea {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0; /* Prevents flex children from blowing out width */
+}
+
 .headerContent {
   display: flex;
   align-items: center;

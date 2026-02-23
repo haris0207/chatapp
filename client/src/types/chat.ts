@@ -3,6 +3,7 @@ export interface ChatMessage {
     username: string;
     text: string;
     timestamp: number;
+    isEphemeral?: boolean;
 }
 
 export type ConnectionStatus = 'connected' | 'connecting' | 'disconnected';

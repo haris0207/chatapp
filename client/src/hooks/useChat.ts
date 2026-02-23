@@ -6,15 +6,18 @@ import { ChatMessage, ConnectionStatus } from '@/types/chat';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
 
-export function useChat(username: string) {
+export function useChat(username: string, roomId?: string, password?: string) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
+    const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [status, setStatus] = useState<ConnectionStatus>('disconnected');
+    const [joinError, setJoinError] = useState<string | null>(null);
     const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        if (!username) return;
+        if (!username || !roomId) return;
 
         setStatus('connecting');
+        setJoinError(null);
 
         const socket = io(SOCKET_URL, {
             transports: ['websocket', 'polling'],
@@ -24,7 +27,18 @@ export function useChat(username: string) {
 
         socket.on('connect', () => {
             setStatus('connected');
-            socket.emit('getMessages');
+            socket.emit('joinRoom', { roomId, password, username });
+        });
+
+        socket.on('roomJoined', () => {
+            setJoinError(null);
+            // We get messageHistory right after joining
+        });
+
+        socket.on('joinError', (errorMsg: string) => {
+            setJoinError(errorMsg);
+            socket.disconnect();
+            setStatus('disconnected');
         });
 
         socket.on('disconnect', () => {
@@ -39,22 +53,31 @@ export function useChat(username: string) {
             setMessages((prev) => [...prev, message]);
         });
 
+        socket.on('messageExpired', (messageId: string) => {
+            setMessages((prev) => prev.filter((m) => m.id !== messageId));
+        });
+
         socket.on('messagesCleared', () => {
             setMessages([]);
+        });
+
+        socket.on('usersOnline', (users: string[]) => {
+            setOnlineUsers(users);
         });
 
         return () => {
             socket.disconnect();
             socketRef.current = null;
         };
-    }, [username]);
+    }, [username, roomId, password]);
 
     const sendMessage = useCallback(
-        (text: string) => {
+        (text: string, isEphemeral?: boolean) => {
             if (!socketRef.current || !text.trim()) return;
             socketRef.current.emit('sendMessage', {
                 username,
                 text: text.trim(),
+                isEphemeral,
             });
         },
         [username],
@@ -65,5 +88,5 @@ export function useChat(username: string) {
         socketRef.current.emit('clearMessages');
     }, []);
 
-    return { messages, sendMessage, clearMessages, status };
+    return { messages, onlineUsers, sendMessage, clearMessages, status, joinError };
 }
