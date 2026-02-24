@@ -4,7 +4,7 @@ import { useState, useCallback, KeyboardEvent } from 'react';
 import styles from './UsernameForm.module.css';
 
 interface UsernameFormProps {
-    onSubmit: (username: string, roomId: string, password?: string) => void;
+    onSubmit: (username: string, roomId: string, password?: string, action?: 'create' | 'join') => void;
     prefilledRoomId?: string;
 }
 
@@ -13,6 +13,7 @@ export default function UsernameForm({ onSubmit, prefilledRoomId }: UsernameForm
     const [roomId, setRoomId] = useState(prefilledRoomId || '');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [mode, setMode] = useState<'create' | 'join'>(prefilledRoomId ? 'join' : 'create');
 
     const handleSubmit = useCallback(() => {
         const trimmedName = name.trim();
@@ -32,8 +33,8 @@ export default function UsernameForm({ onSubmit, prefilledRoomId }: UsernameForm
         }
 
         setError('');
-        onSubmit(trimmedName, trimmedRoomId, password || undefined);
-    }, [name, roomId, password, onSubmit]);
+        onSubmit(trimmedName, trimmedRoomId, password || undefined, mode);
+    }, [name, roomId, password, mode, onSubmit]);
 
     const handleKeyDown = useCallback(
         (e: KeyboardEvent<HTMLInputElement>) => {
@@ -54,8 +55,28 @@ export default function UsernameForm({ onSubmit, prefilledRoomId }: UsernameForm
                 <h1 className={styles.title}>
                     <span className="text-gradient">ChatApp</span>
                 </h1>
+
+                {!prefilledRoomId && (
+                    <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', justifyContent: 'center' }}>
+                        <button
+                            className={`btn ${mode === 'create' ? 'btn-primary' : ''}`}
+                            style={{ flex: 1, padding: '0.5rem', opacity: mode === 'create' ? 1 : 0.7 }}
+                            onClick={() => setMode('create')}
+                        >
+                            Create Room
+                        </button>
+                        <button
+                            className={`btn ${mode === 'join' ? 'btn-primary' : ''}`}
+                            style={{ flex: 1, padding: '0.5rem', opacity: mode === 'join' ? 1 : 0.7 }}
+                            onClick={() => setMode('join')}
+                        >
+                            Join Room
+                        </button>
+                    </div>
+                )}
+
                 <p className={styles.subtitle}>
-                    {prefilledRoomId ? `Join ${prefilledRoomId}` : 'Create or join a private room'}
+                    {prefilledRoomId ? `Joining room: ${prefilledRoomId}` : mode === 'create' ? 'Create a new private or public room' : 'Join an existing room'}
                 </p>
 
                 <div className={styles.inputGroup}>
@@ -83,7 +104,7 @@ export default function UsernameForm({ onSubmit, prefilledRoomId }: UsernameForm
                 {!prefilledRoomId && (
                     <div className={styles.inputGroup}>
                         <label htmlFor="roomid" className={styles.label}>
-                            Room ID
+                            Room ID (will become URL)
                         </label>
                         <input
                             type="text"
@@ -105,14 +126,14 @@ export default function UsernameForm({ onSubmit, prefilledRoomId }: UsernameForm
 
                 <div className={styles.inputGroup}>
                     <label htmlFor="password" className={styles.label}>
-                        Room Password (Optional)
+                        {mode === 'create' ? 'Set Password (Optional)' : 'Room Password (If required)'}
                     </label>
                     <input
                         type="password"
                         name="password"
                         id="password"
                         className={`input ${styles.field}`}
-                        placeholder="Leave blank for public room"
+                        placeholder={mode === 'create' ? "Leave blank for public room" : "Enter password"}
                         value={password}
                         onChange={(e) => {
                             setPassword(e.target.value);
@@ -129,7 +150,7 @@ export default function UsernameForm({ onSubmit, prefilledRoomId }: UsernameForm
                     disabled={!name.trim() || !roomId.trim()}
                     type="button"
                 >
-                    Join Chat
+                    {mode === 'create' ? 'Create Room' : 'Join Chat'}
                     <svg
                         width="18"
                         height="18"
@@ -139,9 +160,19 @@ export default function UsernameForm({ onSubmit, prefilledRoomId }: UsernameForm
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
+                        style={{ marginLeft: '8px' }}
                     >
-                        <line x1="5" y1="12" x2="19" y2="12" />
-                        <polyline points="12 5 19 12 12 19" />
+                        {mode === 'create' ? (
+                            <>
+                                <line x1="12" y1="5" x2="12" y2="19" />
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                            </>
+                        ) : (
+                            <>
+                                <line x1="5" y1="12" x2="19" y2="12" />
+                                <polyline points="12 5 19 12 12 19" />
+                            </>
+                        )}
                     </svg>
                 </button>
             </div>

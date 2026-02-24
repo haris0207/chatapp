@@ -6,7 +6,7 @@ import { ChatMessage, ConnectionStatus } from '@/types/chat';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
 
-export function useChat(username: string, roomId?: string, password?: string) {
+export function useChat(username: string, roomId?: string, password?: string, action?: 'create' | 'join') {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [typingUsers, setTypingUsers] = useState<string[]>([]);
@@ -16,7 +16,7 @@ export function useChat(username: string, roomId?: string, password?: string) {
     const typingTimeouts = useRef<Record<string, NodeJS.Timeout>>({});
 
     useEffect(() => {
-        if (!username || !roomId) return;
+        if (!username || !roomId || !action) return;
 
         setStatus('connecting');
         setJoinError(null);
@@ -29,7 +29,7 @@ export function useChat(username: string, roomId?: string, password?: string) {
 
         socket.on('connect', () => {
             setStatus('connected');
-            socket.emit('joinRoom', { roomId, password, username });
+            socket.emit('joinRoom', { roomId, password, username, action });
         });
 
         socket.on('roomJoined', () => {
@@ -93,7 +93,7 @@ export function useChat(username: string, roomId?: string, password?: string) {
             socket.disconnect();
             socketRef.current = null;
         };
-    }, [username, roomId, password]);
+    }, [username, roomId, password, action]);
 
     const sendMessage = useCallback(
         (text: string, isEphemeral?: boolean) => {

@@ -11,11 +11,12 @@ interface ChatRoomProps {
     username: string;
     roomId: string;
     password?: string;
+    action?: 'create' | 'join';
     onLeave: () => void;
 }
 
-export default function ChatRoom({ username, roomId, password, onLeave }: ChatRoomProps) {
-    const { messages, onlineUsers, typingUsers, sendMessage, clearMessages, sendTyping, status, joinError } = useChat(username, roomId, password);
+export default function ChatRoom({ username, roomId, password, action = 'join', onLeave }: ChatRoomProps) {
+    const { messages, onlineUsers, typingUsers, sendMessage, clearMessages, sendTyping, status, joinError } = useChat(username, roomId, password, action);
 
     const handleSendMessage = (text: string, isEphemeral?: boolean) => {
         let finalText = text.trim();

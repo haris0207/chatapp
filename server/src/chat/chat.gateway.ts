@@ -67,23 +67,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @SubscribeMessage('joinRoom')
     handleJoinRoom(
-        @MessageBody() data: { roomId: string; password?: string; username: string },
+        @MessageBody() data: { roomId: string; password?: string; username: string; action?: 'create' | 'join' },
         @ConnectedSocket() client: Socket,
     ): void {
-        const { roomId, password, username } = data;
+        const { roomId, password, username, action = 'join' } = data;
         let room = this.rooms.get(roomId);
 
-        // Create room if it doesn't exist
-        if (!room) {
+        if (action === 'create') {
+            if (room) {
+                client.emit('joinError', 'Room already exists');
+                return;
+            }
             room = { password, messages: [], users: new Map() };
             this.rooms.set(roomId, room);
+        } else if (action === 'join') {
+            if (!room) {
+                client.emit('joinError', 'Room does not exist');
+                return;
+            }
+            // Check password if joining an existing protected room
+            if (room.password && room.password !== password) {
+                client.emit('joinError', 'Invalid password');
+                return;
+            }
         }
 
-        // Check password if joining an existing protected room
-        if (room.password && room.password !== password) {
-            client.emit('joinError', 'Invalid password');
-            return;
-        }
+        // Safety check to appease TypeScript, though logic guarantees room is defined here
+        if (!room) return;
 
         // Leave previous room if any
         const prevRoom = this.clientRooms.get(client.id);
